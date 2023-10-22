@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Infinite Flight ATIS Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2d2d2d;
+            margin: 0;
+            padding: 0;
+            color: white;
+        }
+
+        header {
+            background-color: #00485c;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+	.stripe {
+	    height: 5px;
+	    color: 04c9ff;
+	}
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #252525;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
+        .textbox {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .textbox::placeholder {
+            text-align: center;
+        }
+
+        .info-box {
+            background-color: #00485c;
+            padding: 10px;
+            border: 1px solid #04c9ff;
+            border-radius: 10px;
+            border-width: 2px;
+            margin: 10px 0;
+        }
+
+        .info-title {
+            font-weight: bold;
+        }
+
+        .btn-submit {
+            background-color: #00a919;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .info-box p {
+            text-transform: capitalize;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Infinite Flight ATIS Viewer</h1>
+    </header>
+    <div class="stripe">
+
+    </div>
+
+    <div class="container">
+        <form id="atisForm" style="text-align: center; padding: 10px;">
+            <label id="labelll" style="color: #fff;" for="icaoInput">Enter Airport ICAO Code:</label>
+            <input type="text" id="icaoInput" class="textbox" placeholder="Enter ICAO Code...">
+            <button type="submit" class="btn-submit">Submit</button>
+        </form>
+        <div class="info-box">
+            <p class="info-title">Airport Name:</p>
+            <p id="airportName">-</p>
+        </div>
+        <div class="info-box">
+            <p class="info-title">ATIS Information:</p>
+            <p id="atisInfo">-</p>
+        </div>
+        <div class="info-box">
+            <p class="info-title">Time:</p>
+            <p id="timeValue">-</p>
+        </div>
+        <div class="info-box">
+            <p class="info-title">Wind and Visibility:</p>
+            <p id="windVisValue">-</p>
+        </div>
+        <div class="info-box">
+            <p class="info-title">Temperature:</p>
+            <p id="temperatureValue">-</p>
+        </div>
+        <div class="info-box">
+            <p class="info-title">Dew Point:</p>
+            <p id="dewPointValue">-</p>
+        </div>
+        <div class="info-box" id="qnhBox">
+            <p class="info-title">QNH:</p>
+            <p id="qnhValue">-</p>
+        </div>
+        <div class="info-box">
+            <p class="info-title">Remarks:</p>
+            <p id="runwaysValue">-</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('atisForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            getATIS();
+        });
+
+        function getATIS() {
+            const airportIcao = document.getElementById('icaoInput').value;
+            const sessionId = 'df2a8d19-3a54-4ce5-ae65-0b722186e44c';
+            const apiKey = '16g9z0yzub3dszefdibss5455tytdhkr';
+            const apiUrl = `https://api.infiniteflight.com/public/v2/sessions/${sessionId}/airport/${airportIcao}/atis?apikey=${apiKey}`;
+
+            fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    response == null
+                    alert('Either this is an invalid ICAO, orhis airport currently has no ATIS.');
+                    window.location.reload();
+                }
+                return response.json();
+            })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            .then(data => {
+    const atisElements = data.result.split(', ');
+
+    // Remove "Airport" from airportName
+    let airportName = atisElements[0];
+    const airportString = "Airport";
+
+    if (airportName.toLowerCase().includes(airportString.toLowerCase())) {
+        airportName = airportName.replace(new RegExp(airportString, "i"), "").trim();
+    }
+
+    // Remove "ATIS Information" from atisInfo
+    let atisInfo = atisElements[1];
+    const atisString = "ATIS Information";
+
+    if (atisInfo.toLowerCase().includes(atisString.toLowerCase())) {
+        atisInfo = atisInfo.replace(new RegExp(atisString, "i"), "").trim();
+    }
+
+    // Format timeValue as "11:37 ZULU"
+    let timeValue = atisElements[2];
+    
+    // Extract the time in the format "HHMM" (e.g., "1137")
+    const timeMatch = timeValue.match(/\d{4}/);
+    if (timeMatch) {
+        const timeDigits = timeMatch[0];
+        const hours = timeDigits.slice(0, 2);
+        const minutes = timeDigits.slice(2, 4);
+
+        timeValue = `${hours}:${minutes} ZULU`;
+    }
+
+
+
+
+
+
+    // Remove "Temperature" from temperatureValue
+    let temperatureValue = atisElements[4];
+    const temperatureString = "Temperature";
+
+    if (temperatureValue.toLowerCase().includes(temperatureString.toLowerCase())) {
+        temperatureValue = temperatureValue.replace(new RegExp(temperatureString, "i"), "").trim();
+    }
+    temperatureValue += "°C";
+
+    // Extract the QNH value
+    let qnhValue = atisElements[6].trim();
+    let qnhValueAfterDot = '';
+
+    const dotIndex = qnhValue.indexOf('.');
+    if (dotIndex !== -1) {
+        qnhValueAfterDot = qnhValue.substring(dotIndex + 1).trim();
+        qnhValue = qnhValue.substring(0, dotIndex).trim();
+    }
+
+    // Add anything after the "." in qnhValue to the beginning of runwaysValue
+    let runwaysValue = qnhValueAfterDot + ' ' + atisElements[7];
+
+    // Add "-" before "Visibility" in windVisValue
+    let windVisValue = atisElements[3];
+    windVisValue = windVisValue.replace(" Visibility", "kts - Visibility");
+
+    // Append "km" to windVisValue
+    windVisValue += " km";
+
+    // Add a degree symbol (°) after the 8th character in windVisValue
+    if (windVisValue.length > 8) {
+        windVisValue = windVisValue.slice(0, 8) + "°" + windVisValue.slice(8);
+    }
+    runwaysValue += " - ";
+    runwaysValue += atisElements[8];
+    runwaysValue += " - ";
+    runwaysValue += atisElements[9];
+
+
+    document.getElementById('airportName').textContent = airportName;
+    document.getElementById('atisInfo').textContent = atisInfo;
+    document.getElementById('timeValue').textContent = timeValue;
+    document.getElementById('windVisValue').textContent = windVisValue;
+    document.getElementById('temperatureValue').textContent = temperatureValue;
+    document.getElementById('dewPointValue').textContent = atisElements[5];
+    document.getElementById('qnhValue').textContent = qnhValue;
+    document.getElementById('runwaysValue').textContent = runwaysValue;
+    
+})
+.catch(error => {
+    response == null
+    alert('Horrendous Error');
+    window.location.reload();
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+    </script>
+</body>
+</html>
